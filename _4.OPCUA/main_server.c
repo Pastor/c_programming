@@ -3,9 +3,10 @@
 
 UA_NodeId Detector_id;
 UA_NodeId Detector_value_id;
+UA_NodeId EventType_id;
 static UA_UInt16 detector_value = 0;
 
-void write_detector_value(UA_UInt16 value);
+void write_detector_value(UA_Server *server, UA_UInt16 value);
 
 static UA_StatusCode
 read_variable(UA_Server *server,
@@ -25,9 +26,9 @@ write_variable(UA_Server *server,
                const UA_NumericRange *range, const UA_DataValue *data) {
     if (data->value.type == &UA_TYPES[UA_TYPES_UINT16]) {
         detector_value = *(UA_UInt16 *) data->value.data;
-        write_detector_value(detector_value);
+        write_detector_value(server, detector_value);
     } else {
-        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Can't write variable. Bad type");
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "Can't write variable. Bad type");
     }
     return UA_STATUSCODE_GOOD;
 }
@@ -35,6 +36,20 @@ write_variable(UA_Server *server,
 
 void register_objects(UA_Server *server) {
     UA_StatusCode sc;
+    {
+        UA_ObjectTypeAttributes attr = UA_ObjectTypeAttributes_default;
+        attr.displayName = UA_LOCALIZEDTEXT("ru-RU", "Событие");
+        attr.description = UA_LOCALIZEDTEXT("ru-RU", "Событие устройства");
+        sc = UA_Server_addObjectTypeNode(server, UA_NODEID_NULL,
+                                           UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE),
+                                           UA_NODEID_NUMERIC(0, UA_NS0ID_HASSUBTYPE),
+                                           UA_QUALIFIEDNAME(0, "Device.EventType"),
+                                           attr, NULL, &EventType_id);
+        if (sc != UA_STATUSCODE_GOOD) {
+            UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "Registration event type error %s",
+                         UA_StatusCode_name(sc));
+        }
+    }
     {
         UA_ObjectAttributes device_attributes = UA_ObjectAttributes_default;
         device_attributes.displayName = UA_LOCALIZEDTEXT("ru-RU", "Устройство");
@@ -45,7 +60,7 @@ void register_objects(UA_Server *server) {
                                      UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE),
                                      device_attributes, NULL, &Detector_id);
         if (sc != UA_STATUSCODE_GOOD) {
-            UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Registration object error %s",
+            UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "Registration object error %s",
                          UA_StatusCode_name(sc));
         }
     }
@@ -75,7 +90,7 @@ void register_objects(UA_Server *server) {
                                                  detector_data_source, NULL, &Detector_value_id);
 #endif
         if (sc != UA_STATUSCODE_GOOD) {
-            UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Registration variable error %s",
+            UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "Registration variable error %s",
                          UA_StatusCode_name(sc));
         }
     }

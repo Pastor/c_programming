@@ -8,6 +8,7 @@ extern "C" {
 
 extern UA_NodeId Detector_id;
 extern UA_NodeId Detector_value_id;
+extern UA_NodeId EventType_id;
 
 void register_objects(UA_Server *server);
 
