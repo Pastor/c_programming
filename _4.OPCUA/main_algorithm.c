@@ -1,5 +1,4 @@
 #include <open62541.h>
-#include <windows/open62541.h>
 #include "main_server.h"
 
 enum EventType {
@@ -26,12 +25,16 @@ create_event(UA_Server *server, char *message, enum EventType type, UA_NodeId *o
     UA_UInt16 event_type = type == Success ? 0 : 1;
     UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Type"),
                                          &event_type, &UA_TYPES[UA_TYPES_UINT16]);
-
-
+    UA_String event_source_name = UA_STRING("Устройство");
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "SourceName"),
+                                         &event_source_name, &UA_TYPES[UA_TYPES_STRING]);
+    UA_UInt16 event_severity = type == Failure ? 100 : 10;
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Severity"),
+                                         &event_severity, &UA_TYPES[UA_TYPES_UINT16]);
     return UA_STATUSCODE_GOOD;
 }
 
-
+//https://github.com/open62541/open62541/issues/3102
 void write_detector_value(UA_Server *server, UA_UInt16 value) {
     UA_NodeId event_id = UA_NODEID_NULL;
     UA_StatusCode ret = create_event(server, "Ошибка состояния запроса", Failure, &event_id);
@@ -44,7 +47,7 @@ void write_detector_value(UA_Server *server, UA_UInt16 value) {
                            "Triggering event failed. StatusCode %s", UA_StatusCode_name(ret));
         } else {
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                           "Создано событие %lu ", (unsigned long)event_id.identifier.numeric);
+                        "Создано событие %lu ", (unsigned long) event_id.identifier.numeric);
         }
     }
 }

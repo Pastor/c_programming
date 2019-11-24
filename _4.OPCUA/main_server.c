@@ -48,6 +48,9 @@ void register_objects(UA_Server *server) {
         if (sc != UA_STATUSCODE_GOOD) {
             UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "Registration event type error %s",
                          UA_StatusCode_name(sc));
+        } else {
+            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "Создан тип события %lu ", (unsigned long)EventType_id.identifier.numeric);
         }
     }
     {
