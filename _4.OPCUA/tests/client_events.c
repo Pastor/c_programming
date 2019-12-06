@@ -118,7 +118,7 @@ int register_client(const char *url) {
         return EXIT_FAILURE;
     }
     UA_UInt32 sub_id = response.subscriptionId;
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Create subscription succeeded, id %u", sub_id);
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "Create subscription succeeded, id %u", sub_id);
 
     /* Add a MonitoredItem */
     UA_MonitoredItemCreateRequest item;
@@ -144,11 +144,11 @@ int register_client(const char *url) {
                                                  &mon_id, handler_events, NULL);
 
     if (result.statusCode != UA_STATUSCODE_GOOD) {
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT,
                     "Could not add the MonitoredItem with %s", UA_StatusCode_name(ret));
         goto cleanup;
     } else {
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT,
                     "Monitoring 'Root->Objects->Server', id %u", response.subscriptionId);
     }
 
@@ -180,7 +180,7 @@ UA_UInt16 read_value(UA_Client *client, UA_NodeId node_id) {
         UA_Variant_hasScalarType(&value, &UA_TYPES[UA_TYPES_UINT16])) {
         v = *(UA_UInt16 *) value.data;
     } else {
-        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Read value error: %s", UA_StatusCode_name(ret));
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "Read value error: %s", UA_StatusCode_name(ret));
     }
     return v;
 }
@@ -193,9 +193,9 @@ void write_value(UA_Client *client, UA_NodeId node_id, UA_UInt16 n) {
     UA_StatusCode ret = UA_Client_writeValueAttribute(client, node_id, &value);
 
     if (ret == UA_STATUSCODE_GOOD) {
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Value %d write success", n);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "Value %d write success", n);
     } else {
-        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Value %d write failure, error: %s", n,
+        UA_LOG_ERROR(UA_Log_Stdout, UA_LOGCATEGORY_CLIENT, "Value %d write failure, error: %s", n,
                      UA_StatusCode_name(ret));
     }
 }
